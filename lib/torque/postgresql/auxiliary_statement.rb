@@ -207,7 +207,12 @@ module Torque
             # Add the scopes defined by the reflection
             if association.respond_to?(:join_scope)
               args = [@query.arel_table]
-              args << base if association.method(:join_scope).arity.eql?(2)
+              if association.method(:join_scope).arity.eql?(2) # TODO: refactor
+                args << base
+              elsif  association.method(:join_scope).arity.eql?(3)
+                args << base.table
+                args << base
+              end
               @query.merge(association.join_scope(*args))
             end
 
