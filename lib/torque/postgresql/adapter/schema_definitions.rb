@@ -35,13 +35,20 @@ module Torque
         attr_reader :inherits
 
         def initialize(name, *_, **options)
-          old_args = []
-          old_args << options.delete(:temporary) || false
-          old_args << options.delete(:options)
-          old_args << options.delete(:as)
-          comment = options.delete(:comment)
+          begin
+            temp_options = options.clone
+            old_args = []
+            old_args << temp_options.delete(:temporary) || false
+            old_args << temp_options.delete(:options)
+            old_args << temp_options.delete(:as)
+            comment = temp_options.delete(:comment)
 
-          super(name, *old_args, comment: comment)
+            super(name, *old_args, comment: comment)
+          rescue ArgumentError # TODO: really should check arity
+            # Rails 6
+            connection = {} # TODO: where do we get this value?
+            super connection, name, options
+          end
 
           if options.key?(:inherits)
             @inherits = Array[options.delete(:inherits)].flatten.compact
